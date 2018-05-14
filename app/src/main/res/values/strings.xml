@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Data Lab</string>
+
+
+    <string name="edit_enter_email">Enter your email</string>
+    <string name="edit_enter_password">Enter your password</string>
+    <string name="btn_signin">SIGN IN</string>
+    <string name="ttl_login">Login</string>
+</resources>
