@@ -6,4 +6,19 @@
     <string name="edit_enter_password">Enter your password</string>
     <string name="btn_signin">SIGN IN</string>
     <string name="ttl_login">Login</string>
+    <string name="title_activity_course">CourseActivity</string>
+
+    <string name="action_settings">Settings</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="enter_courseid__tip">Enter Course Id (Ex: TCSS450)</string>
+    <string name="enter_short_desc">Enter Course Short Description (Ex:\nMobile App Programming)</string>
+    <string name="enter_long_desc">Enter Course Long Description</string>
+    <string name="enter_prereqs">Enter Prerequisites</string>
+    <string name="btn_add_course">ADD COURSE</string>
+    <string name="btn_clear">CLEAR</string>
+    <string name="btn_edit_course">EDIT COURSE</string>
+    <string name="btn_submit">SUBMIT</string>
+    <string name="action_about">About</string>
 </resources>
