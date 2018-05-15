@@ -3,6 +3,8 @@ package edu.tacoma.uw.css.quandm.datalab;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -26,6 +28,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
+import data.CourseDB;
 import edu.tacoma.uw.css.quandm.datalab.course.Course;
 
 import static android.content.ContentValues.TAG;
@@ -47,9 +50,10 @@ public class CourseListFragment extends Fragment {
     private OnListFragmentInteractionListener mListener;
     private List<Course> mCourseList;
     private RecyclerView mRecyclerView;
+    private CourseDB mCourseDB;
 
-    private View mLoadingView;
-    private int mLongAnimationDuration;
+    //private View mLoadingView;
+    //private int mLongAnimationDuration;
 
 
 
@@ -84,11 +88,11 @@ public class CourseListFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_course_list, container, false);
 
-        mLoadingView = getActivity().findViewById(R.id.loading_spinner);
+        //mLoadingView = getActivity().findViewById(R.id.loading_spinner);
 
         // Retrieve and cache the system's default "short" animation time.
-        mLongAnimationDuration = getResources().getInteger(
-                android.R.integer.config_longAnimTime);
+        //mLongAnimationDuration = getResources().getInteger(
+        //        android.R.integer.config_longAnimTime);
 
         // Set the adapter
         if (view instanceof RecyclerView) {
@@ -104,8 +108,28 @@ public class CourseListFragment extends Fragment {
                     getActivity().findViewById(R.id.fab);
             floatingActionButton.show();
 
-            CourseAsyncTask courseAsyncTask = new CourseAsyncTask();
-            courseAsyncTask.execute(new String[]{COURSE_URL});
+            ConnectivityManager connMgr = (ConnectivityManager)
+                    getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+            if (networkInfo != null && networkInfo.isConnected()) {
+                CourseAsyncTask courseAsyncTask = new CourseAsyncTask();
+                courseAsyncTask.execute(new String[]{COURSE_URL});
+            }
+            else {
+                Toast.makeText(view.getContext(),
+                        "No network connection available. Displaying locally stored data",
+                        Toast.LENGTH_SHORT).show();
+
+                if (mCourseDB == null) {
+                    mCourseDB = new CourseDB(getActivity());
+                }
+                if (mCourseList == null) {
+                    mCourseList = mCourseDB.getCourses();
+                }
+
+                mRecyclerView.setAdapter(new MyCourseRecyclerViewAdapter(mCourseList, mListener));
+            }
+
         }
 
         return view;
@@ -129,35 +153,35 @@ public class CourseListFragment extends Fragment {
         mListener = null;
     }
 
-    private void crossfade() {
-
-
-
-        // Animate the loading view to 0% opacity. After the animation ends,
-        // set its visibility to GONE as an optimization step (it won't
-        // participate in layout passes, etc.)
-        mLoadingView.animate()
-                .alpha(0f)
-                .setDuration(mLongAnimationDuration)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        mLoadingView.setVisibility(View.GONE);
-                    }
-                });
-
-        // Set the content view to 0% opacity but visible, so that it is visible
-        // (but fully transparent) during the animation.
-        mRecyclerView.setAlpha(0f);
-        mRecyclerView.setVisibility(View.VISIBLE);
-
-        // Animate the content view to 100% opacity, and clear any animation
-        // listener set on the view.
-        mRecyclerView.animate()
-                .alpha(1f)
-                .setDuration(mLongAnimationDuration)
-                .setListener(null);
-    }
+//    private void crossfade() {
+//
+//
+//
+//        // Animate the loading view to 0% opacity. After the animation ends,
+//        // set its visibility to GONE as an optimization step (it won't
+//        // participate in layout passes, etc.)
+//        mLoadingView.animate()
+//                .alpha(0f)
+//                .setDuration(mLongAnimationDuration)
+//                .setListener(new AnimatorListenerAdapter() {
+//                    @Override
+//                    public void onAnimationEnd(Animator animation) {
+//                        mLoadingView.setVisibility(View.GONE);
+//                    }
+//                });
+//
+//        // Set the content view to 0% opacity but visible, so that it is visible
+//        // (but fully transparent) during the animation.
+//        mRecyclerView.setAlpha(0f);
+//        mRecyclerView.setVisibility(View.VISIBLE);
+//
+//        // Animate the content view to 100% opacity, and clear any animation
+//        // listener set on the view.
+//        mRecyclerView.animate()
+//                .alpha(1f)
+//                .setDuration(mLongAnimationDuration)
+//                .setListener(null);
+//    }
 
 
     /**
@@ -176,6 +200,9 @@ public class CourseListFragment extends Fragment {
     }
 
     private class CourseAsyncTask extends AsyncTask<String, Void, String> {
+
+
+
 
         @Override
         protected String doInBackground(String... urls) {
@@ -208,6 +235,7 @@ public class CourseListFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String result) {
+
             Log.i(TAG, "onPostExecute");
 
             if (result.startsWith("Unable to")) {
@@ -227,10 +255,27 @@ public class CourseListFragment extends Fragment {
 
             // Everything is good, show the list of courses.
             if (!mCourseList.isEmpty()) {
-                crossfade();
+
+                if (mCourseDB == null) {
+                    mCourseDB = new CourseDB(getActivity());
+                }
+
+                // Delete old data so that you can refresh the local
+                // database with the network data.
+                mCourseDB.deleteCourses();
+
+                // Also, add to the local database
+                for (int i=0; i<mCourseList.size(); i++) {
+                    Course course = mCourseList.get(i);
+                    mCourseDB.insertCourse(course.getCourseId(),
+                            course.getShortDescription(),
+                            course.getLongDescription(),
+                            course.getPrereqs());
+                }
                 mRecyclerView.setAdapter(new MyCourseRecyclerViewAdapter(mCourseList, mListener));
             }
         }
+
 
     }
 }
