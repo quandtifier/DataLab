@@ -1,5 +1,8 @@
 package edu.tacoma.uw.css.quandm.datalab;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -22,6 +25,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import authenticate.SignInActivity;
 import edu.tacoma.uw.css.quandm.datalab.CourseDetailFragment;
 import edu.tacoma.uw.css.quandm.datalab.CourseEditFragment;
 import edu.tacoma.uw.css.quandm.datalab.CourseListFragment;
@@ -84,6 +88,19 @@ public class CourseActivity extends AppCompatActivity implements
             Toast.makeText(this, "Showing courses in CSS", Toast.LENGTH_SHORT)
                     .show();
         }
+
+        if (id == R.id.action_logout) {
+            SharedPreferences sharedPreferences =
+                    getSharedPreferences(getString(R.string.LOGIN_PREFS), Context.MODE_PRIVATE);
+            sharedPreferences.edit().putBoolean(getString(R.string.LOGGEDIN), false)
+                    .commit();
+
+            Intent i = new Intent(this, SignInActivity.class);
+            startActivity(i);
+            finish();
+
+        }
+
 
 
         return super.onOptionsItemSelected(item);

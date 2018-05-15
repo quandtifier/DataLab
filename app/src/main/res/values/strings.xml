@@ -10,7 +10,10 @@
 
     <string name="action_settings">Settings</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="LOGIN_PREFS">edu.tacoma.uw.datalab.PREFS</string>
+    <string name="LOGGEDIN">loggedin</string>
+    <string name="action_logout">Logout</string>
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="enter_courseid__tip">Enter Course Id (Ex: TCSS450)</string>
     <string name="enter_short_desc">Enter Course Short Description (Ex:\nMobile App Programming)</string>
